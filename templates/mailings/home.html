@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}Главная{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stats-card">
+            <i class="fas fa-envelope-open-text fa-2x mb-2"></i>
+            <h3>{{ total_mailings }}</h3>
+            <p>Всего рассылок</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <i class="fas fa-running fa-2x mb-2"></i>
+            <h3>{{ active_mailings }}</h3>
+            <p>Активных рассылок</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <i class="fas fa-users fa-2x mb-2"></i>
+            <h3>{{ unique_clients }}</h3>
+            <p>Уникальных клиентов</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stats-card">
+            <i class="fas fa-paper-plane fa-2x mb-2"></i>
+            <h3>{{ total_attempts }}</h3>
+            <p>Всего отправлено</p>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Статистика рассылок</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="mailingStats"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Успешность отправки</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="successRate"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Активность по дням</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="activityChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Топ клиентов</h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% for client in top_clients %}
+                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                        {{ client.email }}
+                        <span class="badge bg-primary rounded-pill">{{ client.count }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Статистика рассылок
+    new Chart(document.getElementById('mailingStats'), {
+        type: 'doughnut',
+        data: {
+            labels: ['Активные', 'Завершенные', 'Ожидающие'],
+            datasets: [{
+                data: [{{ active_mailings }}, {{ completed_mailings }}, {{ pending_mailings }}],
+                backgroundColor: ['#2ecc71', '#3498db', '#f1c40f']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Успешность отправки
+    new Chart(document.getElementById('successRate'), {
+        type: 'pie',
+        data: {
+            labels: ['Успешно', 'Ошибки'],
+            datasets: [{
+                data: [{{ success_attempts }}, {{ failed_attempts }}],
+                backgroundColor: ['#2ecc71', '#e74c3c']
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+
+    // Активность по дням
+    new Chart(document.getElementById('activityChart'), {
+        type: 'line',
+        data: {
+            labels: {{ days|safe }},
+            datasets: [{
+                label: 'Отправлено писем',
+                data: {{ daily_activity }},
+                borderColor: '#3498db',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+{% endblock %} 
